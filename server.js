@@ -1,17 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { OpenAI } = require('openai');
+const { Configuration, OpenAIApi } = require('openai');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // NE PAS METTRE DE CLÉ DIRECTEMENT ICI
+// 👉 Mets ici ta propre clé API si tu veux la fixer en dur
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || 'ta_clé_openai';
+
+const configuration = new Configuration({
+  apiKey: OPENAI_API_KEY,
 });
+const openai = new OpenAIApi(configuration);
 
 app.use(cors());
-app.use(express.json());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
@@ -19,31 +22,31 @@ app.get('/', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  res.json({ message: '✅ Test route OK' });
+  res.json({ message: '✅ Test route OK sans Puppeteer' });
 });
 
 app.post('/analyse', async (req, res) => {
   try {
-    const { title, price } = req.body;
-    const completion = await openai.chat.completions.create({
+    const { titre, description } = req.body;
+
+    const prompt = `Tu es un expert en comparaison de produits. Analyse ce produit :
+    Titre : ${titre}
+    Description : ${description}
+    
+    Donne-moi une recommandation claire :
+    1. Si c’est un bon produit ou non
+    2. Et propose 3 à 5 alternatives meilleures en prix ou qualité (si possible sur Amazon, Fnac, LDLC ou autre)
+    3. Donne des liens directs vers ces produits si possible.`;
+
+    const completion = await openai.createChatCompletion({
       model: 'gpt-4',
-      messages: [
-        {
-          role: 'system',
-          content: "Tu es un expert en comparateurs de prix et recommandations d’achat.",
-        },
-        {
-          role: 'user',
-          content: `Voici le produit : "${title}" vendu à ${price} €. Peux-tu me proposer 3 à 5 alternatives similaires, plus qualitatives ou moins chères, disponibles en ligne ou sur Amazon ? Donne-moi uniquement des produits concrets avec nom, arguments et lien si possible.`,
-        },
-      ],
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    const answer = completion.choices[0].message.content;
-    res.json({ response: answer });
+    res.json({ result: completion.data.choices[0].message.content });
   } catch (error) {
-    console.error('Erreur GPT:', error);
-    res.status(500).json({ error: 'Erreur lors de l’analyse avec ChatGPT.' });
+    console.error(error.message);
+    res.status(500).json({ error: 'Erreur dans l’analyse du produit.' });
   }
 });
 
