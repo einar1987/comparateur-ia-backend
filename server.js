@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { OpenAI } = require('openai'); // ✅ Corrigé ici
+const { OpenAI } = require('openai');
 
 require('dotenv').config();
 
@@ -11,7 +11,6 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Nouvelle initialisation avec OpenAI v4 SDK
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
