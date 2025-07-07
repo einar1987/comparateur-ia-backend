@@ -1,49 +1,48 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(express.json());
 
+// Route test
+app.get('/', (req, res) => {
+  res.send('✅ Comparateur IA Backend is running!');
+});
+
+// Exemple de route API
 app.post('/analyze', async (req, res) => {
   try {
-    const { productDescription } = req.body;
-
+    const userInput = req.body.text || '';
+    const openaiKey = process.env.OPENAI_API_KEY;
+    
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-4',
+        model: "gpt-4",
         messages: [
-          {
-            role: 'system',
-            content: 'Tu es un assistant qui aide à comparer des produits en ligne.',
-          },
-          {
-            role: 'user',
-            content: productDescription,
-          },
-        ],
-        temperature: 0.7,
+          { role: "system", content: "Tu es un assistant d’achat intelligent." },
+          { role: "user", content: userInput }
+        ]
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json'
+        }
       }
     );
 
-    res.json({ result: response.data.choices[0].message.content });
+    res.json(response.data);
   } catch (error) {
-    console.error('Erreur GPT:', error.message);
-    res.status(500).json({ error: 'Erreur lors de l’analyse du produit.' });
+    console.error(error.response?.data || error.message);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
+  console.log(`✅ Backend lancé sur le port ${PORT}`);
 });
