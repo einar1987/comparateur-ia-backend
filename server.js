@@ -1,48 +1,63 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-const axios = require('axios');
-require('dotenv').config();
+const { Configuration, OpenAIApi } = require('openai');
 
 const app = express();
+const port = process.env.PORT || 3000;
+
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Route test
-app.get('/', (req, res) => {
-  res.send('✅ Comparateur IA Backend is running!');
+const configuration = new Configuration({
+  apiKey: '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',
 });
+const openai = new OpenAIApi(configuration);
 
-// Exemple de route API
-app.post('/analyze', async (req, res) => {
+app.post('/analyse', async (req, res) => {
+  const { title, price, brand, url } = req.body;
+
+  if (!title || !price) {
+    return res.status(400).json({ error: 'Données manquantes' });
+  }
+
+  const prompt = `
+Tu es un comparateur de produits intelligent.
+Voici un produit trouvé en ligne :
+
+Titre : ${title}
+Prix : ${price}
+Marque : ${brand}
+Lien : ${url}
+
+Ta mission :
+1. Évalue le rapport qualité/prix.
+2. Commente la fiabilité de la marque si tu la connais.
+3. Propose 3 à 5 alternatives similaires, en mieux ou moins cher, sur Amazon, Fnac, LDLC, etc.
+4. Termine par une recommandation globale.
+
+Langue : français.
+Style : concis, utile, neutre.
+
+Réponse :
+`;
+
   try {
-    const userInput = req.body.text || '';
-    const openaiKey = process.env.OPENAI_API_KEY;
-    
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: "gpt-4",
-        messages: [
-          { role: "system", content: "Tu es un assistant d’achat intelligent." },
-          { role: "user", content: userInput }
-        ]
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${openaiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 800,
+    });
 
-    res.json(response.data);
+    const result = completion.data.choices[0].message.content;
+    res.json({ result });
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('Erreur GPT:', error.message);
+    res.status(500).json({ error: 'Erreur lors de l\'appel à GPT' });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Backend lancé sur le port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Serveur backend IA comparateur en ligne sur le port ${port}`);
 });
