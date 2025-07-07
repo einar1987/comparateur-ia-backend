@@ -12,7 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY, // N'oublie pas de définir cette variable dans Render
 });
 
 app.post('/analyse', async (req, res) => {
@@ -42,21 +42,21 @@ Style : concis, utile, neutre.
 `;
 
   try {
-    const chatCompletion = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 800,
     });
 
-    const result = chatCompletion.choices[0].message.content;
+    const result = completion.choices[0].message.content;
     res.json({ result });
   } catch (error) {
-    console.error('Erreur GPT :', error);
-    res.status(500).json({ error: 'Erreur lors de l’appel à GPT' });
+    console.error('Erreur GPT:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'appel à GPT' });
   }
 });
 
 app.listen(port, () => {
-  console.log(`✅ Serveur backend IA actif sur le port ${port}`);
+  console.log(`Serveur backend IA comparateur en ligne sur le port ${port}`);
 });
