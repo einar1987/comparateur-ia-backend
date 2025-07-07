@@ -6,12 +6,10 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Route simple de test
 app.get('/', (req, res) => {
   res.send('✅ Backend Comparateur IA opérationnel !');
 });
 
-// Route test sans Puppeteer
 app.get('/test', (req, res) => {
   res.json({ message: '🧪 Test route OK sans Puppeteer' });
 });
