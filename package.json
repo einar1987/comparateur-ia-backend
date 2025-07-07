@@ -1,0 +1,14 @@
+{
+  "name": "comparateur-ia-backend",
+  "version": "1.0.0",
+  "description": "Backend scraping service for IA price comparison",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^22.0.0",
+    "cors": "^2.8.5"
+  }
+}
