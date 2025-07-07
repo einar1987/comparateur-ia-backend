@@ -1,17 +1,20 @@
-# Utilise l’image officielle de Node.js
+# Utilise une image Node officielle
 FROM node:18
 
-# Crée le dossier de travail
+# Dossier de travail
 WORKDIR /app
 
-# Copie les fichiers package.json
-COPY package.json ./
+# Copie les fichiers
+COPY package.json .
 
 # Installe les dépendances
 RUN npm install
 
 # Copie le reste du code
 COPY . .
+
+# Port exposé
+EXPOSE 3000
 
 # Démarre le serveur
 CMD ["npm", "start"]
