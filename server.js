@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,10 +10,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const configuration = new Configuration({
-  apiKey: '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',
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // assure-toi que c’est bien dans Render
 });
-const openai = new OpenAIApi(configuration);
 
 app.post('/analyse', async (req, res) => {
   const { title, price, brand, url } = req.body;
@@ -40,20 +40,20 @@ Langue : français.
 Style : concis, utile, neutre.
 
 Réponse :
-`;
+  `;
 
   try {
-    const completion = await openai.createChatCompletion({
+    const chatCompletion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 800,
     });
 
-    const result = completion.data.choices[0].message.content;
+    const result = chatCompletion.choices[0].message.content;
     res.json({ result });
   } catch (error) {
-    console.error('Erreur GPT:', error.message);
+    console.error('Erreur GPT:', error);
     res.status(500).json({ error: 'Erreur lors de l\'appel à GPT' });
   }
 });
