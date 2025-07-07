@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { OpenAI } = require('openai');
+const { OpenAI } = require('openai'); // ✅ Corrigé ici
+
 require('dotenv').config();
 
 const app = express();
@@ -10,8 +11,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// ✅ Nouvelle initialisation avec OpenAI v4 SDK
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // assure-toi que c’est bien dans Render
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 app.post('/analyse', async (req, res) => {
@@ -38,9 +40,7 @@ Ta mission :
 
 Langue : français.
 Style : concis, utile, neutre.
-
-Réponse :
-  `;
+`;
 
   try {
     const chatCompletion = await openai.chat.completions.create({
@@ -53,11 +53,11 @@ Réponse :
     const result = chatCompletion.choices[0].message.content;
     res.json({ result });
   } catch (error) {
-    console.error('Erreur GPT:', error);
-    res.status(500).json({ error: 'Erreur lors de l\'appel à GPT' });
+    console.error('Erreur GPT :', error);
+    res.status(500).json({ error: 'Erreur lors de l’appel à GPT' });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Serveur backend IA comparateur en ligne sur le port ${port}`);
+  console.log(`✅ Serveur backend IA actif sur le port ${port}`);
 });
